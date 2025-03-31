@@ -1,0 +1,43 @@
+---
+title: "Research Topic Title"
+author: "Team Members: Nina, Lucas, Brandon"
+output: html_document
+---
+
+## Research Topic
+
+*Research question or title here.*
+
+------------------------------------------------------------------------
+
+## Team Members
+
+-   **Nina**\
+-   **Lucas**\
+-   **Brandon**
+
+------------------------------------------------------------------------
+
+## Data
+
+### Description of the Data Set
+
+*TODO*
+
+### Data Cleaning Steps
+
+```{r load-libraries, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+```{r}
+#TODO: load and preview the data
+
+```
+
+```{r}
+#TODO: cleaning steps
+```
