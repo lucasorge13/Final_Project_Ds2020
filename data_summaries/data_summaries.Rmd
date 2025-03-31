@@ -1,0 +1,158 @@
+---
+title: "OpenFlights Data Analysi"
+author: "Team Members: Nina, Lucas, Brandon"
+output: html_document
+---
+
+## Research Topic
+
+*This project explores global air travel using the OpenFlights datasets. We aim to understand the structure of airline networks, geographic coverage, and operational characteristics by examining data on airlines, airports, routes, countries, and planes.*
+
+------------------------------------------------------------------------
+
+## Team Members
+
+-   **Nina**\
+-   **Lucas**\
+-   **Brandon**
+
+------------------------------------------------------------------------
+
+## Data
+
+### Description of the Data Set
+
+-   **Airlines Dataset:**\
+    Contains information on 5,888 airlines, including unique identifiers, names, aliases, IATA/ICAO codes, callsigns, country of operation, and operational status.
+
+-   **Airports Dataset:**\
+    Includes over 10,000 entries for airports, train stations, and ferry terminals worldwide. Key variables include unique IDs, names, cities, countries, codes, coordinates, altitude, time zone, DST rules, and source details.
+
+-   **Countries Dataset:**\
+    Provides country names along with their ISO 2-letter and 3-letter codes.
+
+-   **Planes Dataset:**\
+    Details various aircraft types with names, IATA equipment codes, and ICAO equipment codes.
+
+-   **Routes Dataset:**\
+    Contains historical route information (as of June 2014) with 67,663 routes covering 3,321 airports and 548 airlines. Variables include airline codes and IDs, source and destination airport codes/IDs, codeshare indicators, number of stops, and equipment codes.
+
+## Data Loading and First Data Cleaning Steps
+
+Below, we load the datasets, assign meaningful column names, and perform basic cleaning such as removing obvious missing values and standardizing column names.
+
+```{r load-libraries, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+#Define file paths
+airlines_path <- "../data/airlines.dat"
+airports_path <- "../data/airports.dat"
+countries_path <- "../data/countries.dat"
+planes_path <- "../data/planes.dat"
+routes_path <- "../data/routes.dat"
+
+airlines <- read_csv(airlines_path, col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(c("airline_id", "name", "alias", "iata", "icao", "callsign", "country", "active")) %>%
+  clean_names()
+
+airports <- read_csv(airports_path, col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(c("airport_id", "name", "city", "country", "iata", "icao",
+              "latitude", "longitude", "altitude", "timezone", "dst",
+              "olson_timezone", "type", "source")) %>%
+  clean_names()
+
+countries <- read_csv(countries_path, col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(c("country", "iso2", "iso3")) %>%
+  clean_names()
+
+planes <- read_csv(planes_path, col_names = FALSE, show_col_types = FALSE) %>%
+  set_names(c("plane_name", "iata_equipment", "icao_equipment")) %>%
+  clean_names()
+
+routes <- read_csv(routes_path, col_names = FALSE, na = "\\N", show_col_types = FALSE) %>%
+  set_names(c("airline", "airline_id", "source_airport", "source_airport_id",
+              "destination_airport", "destination_airport_id", "codeshare",
+              "stops", "equipment")) %>%
+  clean_names()
+```
+
+```{r}
+# Clean Airlines: Replace "\\N" with NA in character columns, convert types, keep active airlines
+airlines_clean <- airlines %>%
+  mutate(across(where(is.character), ~ na_if(.x, "\\N")),
+         airline_id = as.integer(airline_id)) %>%
+  filter(!is.na(airline_id), active == "Y") %>%
+  distinct()
+
+# Clean Airports: Replace "\\N" with NA in character columns, convert types, remove invalid coords/codes
+airports_clean <- airports %>%
+  mutate(across(where(is.character), ~ na_if(.x, "\\N")),
+         airport_id = as.integer(airport_id),
+         latitude = as.numeric(latitude),
+         longitude = as.numeric(longitude),
+         altitude = as.numeric(altitude),
+         timezone = as.numeric(timezone)) %>%
+  filter(!is.na(latitude), !is.na(longitude), !is.na(iata), !is.na(icao)) %>%
+  distinct()
+
+# Clean Routes: Replace "\\N" with NA in character columns, convert types, keep direct flights
+routes_clean <- routes %>%
+  mutate(across(where(is.character), ~ na_if(.x, "\\N")),
+         airline_id = as.integer(airline_id),
+         source_airport_id = as.integer(source_airport_id),
+         destination_airport_id = as.integer(destination_airport_id),
+         stops = as.integer(stops)) %>%
+  filter(!is.na(source_airport_id), !is.na(destination_airport_id)) %>%
+  filter(stops == 0) %>%
+  distinct()
+
+# Clean Countries: Replace "\\N" with NA in character columns, remove rows with missing country
+countries_clean <- countries %>%
+  mutate(across(where(is.character), ~ na_if(.x, "\\N"))) %>%
+  filter(!is.na(country)) %>%
+  distinct()
+
+# Clean Planes: Replace "\\N" with NA in character columns, keep rows with at least one equipment code
+planes_clean <- planes %>%
+  mutate(across(where(is.character), ~ na_if(.x, "\\N"))) %>%
+  filter(!is.na(iata_equipment) | !is.na(icao_equipment)) %>%
+  distinct()
+```
+
+```{r}
+# Join routes with airline data and source/destination airport info
+routes_joined <- routes_clean %>%
+  # Join with airline information
+  left_join(airlines_clean, by = "airline_id") %>%
+  
+  # Join with source airport (adds _src suffix)
+  left_join(airports_clean, 
+            by = c("source_airport_id" = "airport_id"), 
+            suffix = c("", "_src")) %>%
+  
+  # Join with destination airport (adds _dst suffix)
+  left_join(airports_clean, 
+            by = c("destination_airport_id" = "airport_id"), 
+            suffix = c("", "_dst"))
+```
+
+```{r}
+glimpse(airlines_clean)
+head(airlines_clean)
+
+glimpse(airports_clean)
+head(airports_clean)
+
+glimpse(routes_clean)
+head(routes_clean)
+
+glimpse(countries_clean)
+head(countries_clean)
+
+glimpse(planes_clean)
+head(planes_clean)
+```

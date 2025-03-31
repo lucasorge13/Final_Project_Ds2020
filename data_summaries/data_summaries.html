@@ -9,9 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Team Members: Nina, Lucas, Brandon" />
 
 
-<title>data_summaries.knit</title>
+<title>OpenFlights Data Analysi</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,15 +349,257 @@ display: none;
 
 
 
+<h1 class="title toc-ignore">OpenFlights Data Analysi</h1>
+<h4 class="author">Team Members: Nina, Lucas, Brandon</h4>
 
 </div>
 
 
-<p>##Research topic (title):</p>
-<p>##Team members: Nina, Lucas, Brandon</p>
-<p>##Data: description of your data set, first data cleaning steps,
-marginal summaries;</p>
-<p>##Questions to be addressed: Fleshed out project idea</p>
+<div id="research-topic" class="section level2">
+<h2>Research Topic</h2>
+<p><em>This project explores global air travel using the OpenFlights
+datasets. We aim to understand the structure of airline networks,
+geographic coverage, and operational characteristics by examining data
+on airlines, airports, routes, countries, and planes.</em></p>
+<hr />
+</div>
+<div id="team-members" class="section level2">
+<h2>Team Members</h2>
+<ul>
+<li><strong>Nina</strong><br />
+</li>
+<li><strong>Lucas</strong><br />
+</li>
+<li><strong>Brandon</strong></li>
+</ul>
+<hr />
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<div id="description-of-the-data-set" class="section level3">
+<h3>Description of the Data Set</h3>
+<ul>
+<li><p><strong>Airlines Dataset:</strong><br />
+Contains information on 5,888 airlines, including unique identifiers,
+names, aliases, IATA/ICAO codes, callsigns, country of operation, and
+operational status.</p></li>
+<li><p><strong>Airports Dataset:</strong><br />
+Includes over 10,000 entries for airports, train stations, and ferry
+terminals worldwide. Key variables include unique IDs, names, cities,
+countries, codes, coordinates, altitude, time zone, DST rules, and
+source details.</p></li>
+<li><p><strong>Countries Dataset:</strong><br />
+Provides country names along with their ISO 2-letter and 3-letter
+codes.</p></li>
+<li><p><strong>Planes Dataset:</strong><br />
+Details various aircraft types with names, IATA equipment codes, and
+ICAO equipment codes.</p></li>
+<li><p><strong>Routes Dataset:</strong><br />
+Contains historical route information (as of June 2014) with 67,663
+routes covering 3,321 airports and 548 airlines. Variables include
+airline codes and IDs, source and destination airport codes/IDs,
+codeshare indicators, number of stops, and equipment codes.</p></li>
+</ul>
+</div>
+</div>
+<div id="data-loading-and-first-data-cleaning-steps" class="section level2">
+<h2>Data Loading and First Data Cleaning Steps</h2>
+<p>Below, we load the datasets, assign meaningful column names, and
+perform basic cleaning such as removing obvious missing values and
+standardizing column names.</p>
+<pre class="r"><code>library(tidyverse)
+library(janitor)</code></pre>
+<pre class="r"><code>#Define file paths
+airlines_path &lt;- &quot;../data/airlines.dat&quot;
+airports_path &lt;- &quot;../data/airports.dat&quot;
+countries_path &lt;- &quot;../data/countries.dat&quot;
+planes_path &lt;- &quot;../data/planes.dat&quot;
+routes_path &lt;- &quot;../data/routes.dat&quot;
+
+airlines &lt;- read_csv(airlines_path, col_names = FALSE, show_col_types = FALSE) %&gt;%
+  set_names(c(&quot;airline_id&quot;, &quot;name&quot;, &quot;alias&quot;, &quot;iata&quot;, &quot;icao&quot;, &quot;callsign&quot;, &quot;country&quot;, &quot;active&quot;)) %&gt;%
+  clean_names()
+
+airports &lt;- read_csv(airports_path, col_names = FALSE, show_col_types = FALSE) %&gt;%
+  set_names(c(&quot;airport_id&quot;, &quot;name&quot;, &quot;city&quot;, &quot;country&quot;, &quot;iata&quot;, &quot;icao&quot;,
+              &quot;latitude&quot;, &quot;longitude&quot;, &quot;altitude&quot;, &quot;timezone&quot;, &quot;dst&quot;,
+              &quot;olson_timezone&quot;, &quot;type&quot;, &quot;source&quot;)) %&gt;%
+  clean_names()
+
+countries &lt;- read_csv(countries_path, col_names = FALSE, show_col_types = FALSE) %&gt;%
+  set_names(c(&quot;country&quot;, &quot;iso2&quot;, &quot;iso3&quot;)) %&gt;%
+  clean_names()
+
+planes &lt;- read_csv(planes_path, col_names = FALSE, show_col_types = FALSE) %&gt;%
+  set_names(c(&quot;plane_name&quot;, &quot;iata_equipment&quot;, &quot;icao_equipment&quot;)) %&gt;%
+  clean_names()
+
+routes &lt;- read_csv(routes_path, col_names = FALSE, na = &quot;\\N&quot;, show_col_types = FALSE) %&gt;%
+  set_names(c(&quot;airline&quot;, &quot;airline_id&quot;, &quot;source_airport&quot;, &quot;source_airport_id&quot;,
+              &quot;destination_airport&quot;, &quot;destination_airport_id&quot;, &quot;codeshare&quot;,
+              &quot;stops&quot;, &quot;equipment&quot;)) %&gt;%
+  clean_names()</code></pre>
+<pre class="r"><code># Clean Airlines: Replace &quot;\\N&quot; with NA in character columns, convert types, keep active airlines
+airlines_clean &lt;- airlines %&gt;%
+  mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;)),
+         airline_id = as.integer(airline_id)) %&gt;%
+  filter(!is.na(airline_id), active == &quot;Y&quot;) %&gt;%
+  distinct()
+
+# Clean Airports: Replace &quot;\\N&quot; with NA in character columns, convert types, remove invalid coords/codes
+airports_clean &lt;- airports %&gt;%
+  mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;)),
+         airport_id = as.integer(airport_id),
+         latitude = as.numeric(latitude),
+         longitude = as.numeric(longitude),
+         altitude = as.numeric(altitude),
+         timezone = as.numeric(timezone)) %&gt;%
+  filter(!is.na(latitude), !is.na(longitude), !is.na(iata), !is.na(icao)) %&gt;%
+  distinct()
+
+# Clean Routes: Replace &quot;\\N&quot; with NA in character columns, convert types, keep direct flights
+routes_clean &lt;- routes %&gt;%
+  mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;)),
+         airline_id = as.integer(airline_id),
+         source_airport_id = as.integer(source_airport_id),
+         destination_airport_id = as.integer(destination_airport_id),
+         stops = as.integer(stops)) %&gt;%
+  filter(!is.na(source_airport_id), !is.na(destination_airport_id)) %&gt;%
+  filter(stops == 0) %&gt;%
+  distinct()
+
+# Clean Countries: Replace &quot;\\N&quot; with NA in character columns, remove rows with missing country
+countries_clean &lt;- countries %&gt;%
+  mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;))) %&gt;%
+  filter(!is.na(country)) %&gt;%
+  distinct()
+
+# Clean Planes: Replace &quot;\\N&quot; with NA in character columns, keep rows with at least one equipment code
+planes_clean &lt;- planes %&gt;%
+  mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;))) %&gt;%
+  filter(!is.na(iata_equipment) | !is.na(icao_equipment)) %&gt;%
+  distinct()</code></pre>
+<pre class="r"><code># Join routes with airline data and source/destination airport info
+routes_joined &lt;- routes_clean %&gt;%
+  # Join with airline information
+  left_join(airlines_clean, by = &quot;airline_id&quot;) %&gt;%
+  
+  # Join with source airport (adds _src suffix)
+  left_join(airports_clean, 
+            by = c(&quot;source_airport_id&quot; = &quot;airport_id&quot;), 
+            suffix = c(&quot;&quot;, &quot;_src&quot;)) %&gt;%
+  
+  # Join with destination airport (adds _dst suffix)
+  left_join(airports_clean, 
+            by = c(&quot;destination_airport_id&quot; = &quot;airport_id&quot;), 
+            suffix = c(&quot;&quot;, &quot;_dst&quot;))</code></pre>
+<pre class="r"><code>glimpse(airlines_clean)</code></pre>
+<pre><code>## Rows: 1,255
+## Columns: 8
+## $ airline_id &lt;int&gt; -1, 1, 3, 10, 13, 14, 21, 22, 24, 28, 29, 32, 35, 42, 55, 6…
+## $ name       &lt;chr&gt; &quot;Unknown&quot;, &quot;Private flight&quot;, &quot;1Time Airline&quot;, &quot;40-Mile Air&quot;…
+## $ alias      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ iata       &lt;chr&gt; &quot;-&quot;, &quot;-&quot;, &quot;1T&quot;, &quot;Q5&quot;, &quot;AN&quot;, &quot;1B&quot;, &quot;ZI&quot;, &quot;AQ&quot;, &quot;AA&quot;, &quot;OZ&quot;, &quot;…
+## $ icao       &lt;chr&gt; &quot;N/A&quot;, &quot;N/A&quot;, &quot;RNX&quot;, &quot;MLA&quot;, &quot;AAA&quot;, NA, &quot;AAF&quot;, &quot;AAH&quot;, &quot;AAL&quot;,…
+## $ callsign   &lt;chr&gt; NA, NA, &quot;NEXTIME&quot;, &quot;MILE-AIR&quot;, &quot;ANSETT&quot;, NA, &quot;AIGLE AZUR&quot;, …
+## $ country    &lt;chr&gt; NA, NA, &quot;South Africa&quot;, &quot;United States&quot;, &quot;Australia&quot;, &quot;Sing…
+## $ active     &lt;chr&gt; &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;,…</code></pre>
+<pre class="r"><code>head(airlines_clean)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   airline_id name                 alias iata  icao  callsign country      active
+##        &lt;int&gt; &lt;chr&gt;                &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt; 
+## 1         -1 Unknown              &lt;NA&gt;  -     N/A   &lt;NA&gt;     &lt;NA&gt;         Y     
+## 2          1 Private flight       &lt;NA&gt;  -     N/A   &lt;NA&gt;     &lt;NA&gt;         Y     
+## 3          3 1Time Airline        &lt;NA&gt;  1T    RNX   NEXTIME  South Africa Y     
+## 4         10 40-Mile Air          &lt;NA&gt;  Q5    MLA   MILE-AIR United Stat… Y     
+## 5         13 Ansett Australia     &lt;NA&gt;  AN    AAA   ANSETT   Australia    Y     
+## 6         14 Abacus International &lt;NA&gt;  1B    &lt;NA&gt;  &lt;NA&gt;     Singapore    Y</code></pre>
+<pre class="r"><code>glimpse(airports_clean)</code></pre>
+<pre><code>## Rows: 6,072
+## Columns: 14
+## $ airport_id     &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
+## $ name           &lt;chr&gt; &quot;Goroka Airport&quot;, &quot;Madang Airport&quot;, &quot;Mount Hagen Kagamu…
+## $ city           &lt;chr&gt; &quot;Goroka&quot;, &quot;Madang&quot;, &quot;Mount Hagen&quot;, &quot;Nadzab&quot;, &quot;Port More…
+## $ country        &lt;chr&gt; &quot;Papua New Guinea&quot;, &quot;Papua New Guinea&quot;, &quot;Papua New Guin…
+## $ iata           &lt;chr&gt; &quot;GKA&quot;, &quot;MAG&quot;, &quot;HGU&quot;, &quot;LAE&quot;, &quot;POM&quot;, &quot;WWK&quot;, &quot;UAK&quot;, &quot;GOH&quot;,…
+## $ icao           &lt;chr&gt; &quot;AYGA&quot;, &quot;AYMD&quot;, &quot;AYMH&quot;, &quot;AYNZ&quot;, &quot;AYPY&quot;, &quot;AYWK&quot;, &quot;BGBW&quot;,…
+## $ latitude       &lt;dbl&gt; -6.081690, -5.207080, -5.826790, -6.569803, -9.443380, …
+## $ longitude      &lt;dbl&gt; 145.3920, 145.7890, 144.2960, 146.7260, 147.2200, 143.6…
+## $ altitude       &lt;dbl&gt; 5282, 20, 5388, 239, 146, 19, 112, 283, 165, 251, 6, 76…
+## $ timezone       &lt;dbl&gt; 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, -3.0, -3.0, -3.0, -…
+## $ dst            &lt;chr&gt; &quot;U&quot;, &quot;U&quot;, &quot;U&quot;, &quot;U&quot;, &quot;U&quot;, &quot;U&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;E&quot;, &quot;N&quot;, …
+## $ olson_timezone &lt;chr&gt; &quot;Pacific/Port_Moresby&quot;, &quot;Pacific/Port_Moresby&quot;, &quot;Pacifi…
+## $ type           &lt;chr&gt; &quot;airport&quot;, &quot;airport&quot;, &quot;airport&quot;, &quot;airport&quot;, &quot;airport&quot;, …
+## $ source         &lt;chr&gt; &quot;OurAirports&quot;, &quot;OurAirports&quot;, &quot;OurAirports&quot;, &quot;OurAirpor…</code></pre>
+<pre class="r"><code>head(airports_clean)</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   airport_id name          city  country iata  icao  latitude longitude altitude
+##        &lt;int&gt; &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1          1 Goroka Airpo… Goro… Papua … GKA   AYGA     -6.08      145.     5282
+## 2          2 Madang Airpo… Mada… Papua … MAG   AYMD     -5.21      146.       20
+## 3          3 Mount Hagen … Moun… Papua … HGU   AYMH     -5.83      144.     5388
+## 4          4 Nadzab Airpo… Nadz… Papua … LAE   AYNZ     -6.57      147.      239
+## 5          5 Port Moresby… Port… Papua … POM   AYPY     -9.44      147.      146
+## 6          6 Wewak Intern… Wewak Papua … WWK   AYWK     -3.58      144.       19
+## # ℹ 5 more variables: timezone &lt;dbl&gt;, dst &lt;chr&gt;, olson_timezone &lt;chr&gt;,
+## #   type &lt;chr&gt;, source &lt;chr&gt;</code></pre>
+<pre class="r"><code>glimpse(routes_clean)</code></pre>
+<pre><code>## Rows: 67,229
+## Columns: 9
+## $ airline                &lt;chr&gt; &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;, &quot;2B&quot;,…
+## $ airline_id             &lt;int&gt; 410, 410, 410, 410, 410, 410, 410, 410, 410, 41…
+## $ source_airport         &lt;chr&gt; &quot;AER&quot;, &quot;ASF&quot;, &quot;ASF&quot;, &quot;CEK&quot;, &quot;CEK&quot;, &quot;DME&quot;, &quot;DME&quot;…
+## $ source_airport_id      &lt;int&gt; 2965, 2966, 2966, 2968, 2968, 4029, 4029, 4029,…
+## $ destination_airport    &lt;chr&gt; &quot;KZN&quot;, &quot;KZN&quot;, &quot;MRV&quot;, &quot;KZN&quot;, &quot;OVB&quot;, &quot;KZN&quot;, &quot;NBC&quot;…
+## $ destination_airport_id &lt;int&gt; 2990, 2990, 2962, 2990, 4078, 2990, 6969, 6160,…
+## $ codeshare              &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;,…
+## $ stops                  &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ equipment              &lt;chr&gt; &quot;CR2&quot;, &quot;CR2&quot;, &quot;CR2&quot;, &quot;CR2&quot;, &quot;CR2&quot;, &quot;CR2&quot;, &quot;CR2&quot;…</code></pre>
+<pre class="r"><code>head(routes_clean)</code></pre>
+<pre><code>## # A tibble: 6 × 9
+##   airline airline_id source_airport source_airport_id destination_airport
+##   &lt;chr&gt;        &lt;int&gt; &lt;chr&gt;                      &lt;int&gt; &lt;chr&gt;              
+## 1 2B             410 AER                         2965 KZN                
+## 2 2B             410 ASF                         2966 KZN                
+## 3 2B             410 ASF                         2966 MRV                
+## 4 2B             410 CEK                         2968 KZN                
+## 5 2B             410 CEK                         2968 OVB                
+## 6 2B             410 DME                         4029 KZN                
+## # ℹ 4 more variables: destination_airport_id &lt;int&gt;, codeshare &lt;chr&gt;,
+## #   stops &lt;int&gt;, equipment &lt;chr&gt;</code></pre>
+<pre class="r"><code>glimpse(countries_clean)</code></pre>
+<pre><code>## Rows: 261
+## Columns: 3
+## $ country &lt;chr&gt; &quot;Bonaire, Saint Eustatius and Saba&quot;, &quot;Aruba&quot;, &quot;Antigua and Bar…
+## $ iso2    &lt;chr&gt; &quot;BQ&quot;, &quot;AW&quot;, &quot;AG&quot;, &quot;AE&quot;, &quot;AF&quot;, &quot;DZ&quot;, &quot;AZ&quot;, &quot;AL&quot;, &quot;AM&quot;, &quot;AO&quot;, &quot;A…
+## $ iso3    &lt;chr&gt; NA, &quot;AA&quot;, &quot;AC&quot;, &quot;AE&quot;, &quot;AF&quot;, &quot;AG&quot;, &quot;AJ&quot;, &quot;AL&quot;, &quot;AM&quot;, &quot;AO&quot;, &quot;AQ&quot;…</code></pre>
+<pre class="r"><code>head(countries_clean)</code></pre>
+<pre><code>## # A tibble: 6 × 3
+##   country                           iso2  iso3 
+##   &lt;chr&gt;                             &lt;chr&gt; &lt;chr&gt;
+## 1 Bonaire, Saint Eustatius and Saba BQ    &lt;NA&gt; 
+## 2 Aruba                             AW    AA   
+## 3 Antigua and Barbuda               AG    AC   
+## 4 United Arab Emirates              AE    AE   
+## 5 Afghanistan                       AF    AF   
+## 6 Algeria                           DZ    AG</code></pre>
+<pre class="r"><code>glimpse(planes_clean)</code></pre>
+<pre><code>## Rows: 246
+## Columns: 3
+## $ plane_name     &lt;chr&gt; &quot;Aerospatiale (Nord) 262&quot;, &quot;Aerospatiale (Sud Aviation)…
+## $ iata_equipment &lt;chr&gt; &quot;ND2&quot;, &quot;CRV&quot;, &quot;NDC&quot;, &quot;AT4&quot;, &quot;AT5&quot;, &quot;ATR&quot;, &quot;AT7&quot;, &quot;AB3&quot;,…
+## $ icao_equipment &lt;chr&gt; &quot;N262&quot;, &quot;S210&quot;, &quot;S601&quot;, &quot;AT43&quot;, &quot;AT45&quot;, &quot;AT46&quot;, &quot;AT72&quot;,…</code></pre>
+<pre class="r"><code>head(planes_clean)</code></pre>
+<pre><code>## # A tibble: 6 × 3
+##   plane_name                                   iata_equipment icao_equipment
+##   &lt;chr&gt;                                        &lt;chr&gt;          &lt;chr&gt;         
+## 1 Aerospatiale (Nord) 262                      ND2            N262          
+## 2 Aerospatiale (Sud Aviation) Se.210 Caravelle CRV            S210          
+## 3 Aerospatiale SN.601 Corvette                 NDC            S601          
+## 4 Aerospatiale/Alenia ATR 42-300               AT4            AT43          
+## 5 Aerospatiale/Alenia ATR 42-500               AT5            AT45          
+## 6 Aerospatiale/Alenia ATR 42-600               ATR            AT46</code></pre>
+</div>
 
 
 
