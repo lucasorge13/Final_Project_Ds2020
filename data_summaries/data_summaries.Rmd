@@ -1,5 +1,5 @@
 ---
-title: "OpenFlights Data Analysi"
+title: "OpenFlights Data Analysis"
 author: "Team Members: Nina, Lucas, Brandon"
 output: html_document
 ---
