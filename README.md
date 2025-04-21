@@ -32,7 +32,6 @@ Data was obtained from [OpenFlights](https://openflights.org/data.php):
 
 ### Installation
 Clone this repository and install required packages
-```
 
 ## Contributors
 - Lucas Martins Sorge
