@@ -45,6 +45,8 @@ Below, we load the datasets, assign meaningful column names, and perform basic c
 
 library(tidyverse)
 library(janitor)
+library(dplyr)
+library(tidyr)
 ```
 
 ```{r}
@@ -114,7 +116,8 @@ routes_clean <- routes %>%
 countries_clean <- countries %>%
   mutate(across(where(is.character), ~ na_if(.x, "\\N"))) %>%
   filter(!is.na(country)) %>%
-  distinct()
+  distinct() %>%
+  distinct(country, .keep_all = TRUE)
 
 # Clean Planes: Replace "\\N" with NA in character columns, keep rows with at least one equipment code
 planes_clean <- planes %>%
@@ -138,6 +141,72 @@ routes_joined <- routes_clean %>%
   left_join(airports_clean, 
             by = c("destination_airport_id" = "airport_id"), 
             suffix = c("", "_dst"))
+```
+
+```{r}
+# country joins
+
+routes_geo <- routes_joined %>%
+  # bring in source‐airport’s iso2/iso3 by matching on country_src → country
+  left_join(
+    countries_clean %>%
+      rename(
+        source_iso2 = iso2,
+        source_iso3 = iso3
+      ),
+    by = c("country_src" = "country")
+  ) %>%
+  # bring in dest‐airport’s iso2/iso3 by matching on country_dst → country
+  left_join(
+    countries_clean %>%
+      rename(
+        dest_iso2 = iso2,
+        dest_iso3 = iso3
+      ),
+    by = c("country_dst" = "country")
+  )
+
+
+# Parse equipment & attach plane details
+
+# pivot planes → one row per equipment code, then dedupe
+planes_eq <- planes_clean %>%
+  pivot_longer(
+    cols      = c(iata_equipment, icao_equipment),
+    names_to  = "equipment_type",
+    values_to = "equipment_code"
+  ) %>%
+  filter(!is.na(equipment_code)) %>%
+  distinct(equipment_code, .keep_all = TRUE)
+
+
+# explode each route’s equipment list, then lookup plane_name & type
+routes_eq <- routes_geo %>%
+  separate_rows(equipment, sep = " ") %>%
+  left_join(
+    planes_eq,
+    by = c("equipment" = "equipment_code")
+  )
+
+
+# collapse back to one‐row‐per‐route, concatenating equipment info
+routes_final <- routes_eq %>%
+  group_by(airline, source_airport, destination_airport,
+           source_airport_id, destination_airport_id) %>%
+  summarise(
+    equipment_codes  = toString(unique(equipment)),
+    equipment_types  = toString(unique(equipment_type)),
+    plane_names      = toString(unique(plane_name)),
+    .groups = "drop"
+  ) %>%
+  # re‑attach all the geo + airline fields
+  left_join(
+    routes_geo,
+    by = c("airline", "source_airport", "destination_airport",
+           "source_airport_id", "destination_airport_id")
+  )
+
+
 ```
 
 ```{r}
