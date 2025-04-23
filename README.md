@@ -2,8 +2,15 @@
 
 # Global Air Travel Analysis using OpenFlights
 
-## Overview
-This data science project explores global air travel patterns using datasets from the OpenFlights database. We analyze airline networks, airport connectivity, geographic coverage, and operational characteristics to reveal insights into global aviation trends.
+## Introduction
+This data science project explores global air travel patterns using datasets from the OpenFlights database. We analyze airline networks, airport connectivity, geographic coverage, and operational characteristics to reveal insights into global aviation trends. Our goal during this project is to find when and where air traffic is more concentrated. We also want to analyze the structure of global airline route networks, examine geographic coverage and identify underserved regions, and study operational characteristics, including fleet usage and route lengths.
+
+Our questions are as follows:
+1. 
+2. 
+3. 
+4. 
+5. 
 
 ## Data Sources
 Data was obtained from [OpenFlights](https://openflights.org/data.php):
