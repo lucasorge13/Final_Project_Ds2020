@@ -9,9 +9,9 @@ This data science project explores global air travel patterns using datasets fro
 
 Questions
 - 
--
 - 
-- How concentrated is global air traffic?
+- What country has the most amount of airports? Where are the countries with the most airports located?
+- How concentrated is global air traffic? 
 - How does airport connectivity vary between developed and developing countries?
 
 ## Data Sources
