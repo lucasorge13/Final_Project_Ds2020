@@ -44,3 +44,34 @@ Clone this repository and install required packages
 - Lucas Martins Sorge
 - Nina De Grandis
 - Brandon Merrick
+
+## Data Cleaning
+
+
+*Variables*
+
+
+
+## Results
+
+*Question 1:*
+
+
+*Question 2:*
+
+
+*Question 3:*
+
+
+*Question 4:*
+
+
+*Question 5:*
+
+
+## Conclusion
+
+
+
+
+
