@@ -11,8 +11,8 @@ Questions
 - 
 -
 - 
--
-- 
+- How concentrated is global air traffic?
+- How does airport connectivity vary between developed and developing countries?
 
 ## Data Sources
 Data was obtained from [OpenFlights](https://openflights.org/data.php):
