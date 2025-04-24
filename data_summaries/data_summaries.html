@@ -408,7 +408,9 @@ codeshare indicators, number of stops, and equipment codes.</p></li>
 perform basic cleaning such as removing obvious missing values and
 standardizing column names.</p>
 <pre class="r"><code>library(tidyverse)
-library(janitor)</code></pre>
+library(janitor)
+library(dplyr)
+library(tidyr)</code></pre>
 <pre class="r"><code>#Define file paths
 airlines_path &lt;- &quot;../data/airlines.dat&quot;
 airports_path &lt;- &quot;../data/airports.dat&quot;
@@ -472,7 +474,8 @@ routes_clean &lt;- routes %&gt;%
 countries_clean &lt;- countries %&gt;%
   mutate(across(where(is.character), ~ na_if(.x, &quot;\\N&quot;))) %&gt;%
   filter(!is.na(country)) %&gt;%
-  distinct()
+  distinct() %&gt;%
+  distinct(country, .keep_all = TRUE)
 
 # Clean Planes: Replace &quot;\\N&quot; with NA in character columns, keep rows with at least one equipment code
 planes_clean &lt;- planes %&gt;%
@@ -493,6 +496,67 @@ routes_joined &lt;- routes_clean %&gt;%
   left_join(airports_clean, 
             by = c(&quot;destination_airport_id&quot; = &quot;airport_id&quot;), 
             suffix = c(&quot;&quot;, &quot;_dst&quot;))</code></pre>
+<pre class="r"><code># country joins
+
+routes_geo &lt;- routes_joined %&gt;%
+  # bring in source‐airport’s iso2/iso3 by matching on country_src → country
+  left_join(
+    countries_clean %&gt;%
+      rename(
+        source_iso2 = iso2,
+        source_iso3 = iso3
+      ),
+    by = c(&quot;country_src&quot; = &quot;country&quot;)
+  ) %&gt;%
+  # bring in dest‐airport’s iso2/iso3 by matching on country_dst → country
+  left_join(
+    countries_clean %&gt;%
+      rename(
+        dest_iso2 = iso2,
+        dest_iso3 = iso3
+      ),
+    by = c(&quot;country_dst&quot; = &quot;country&quot;)
+  )
+
+
+# Parse equipment &amp; attach plane details
+
+# pivot planes → one row per equipment code, then dedupe
+planes_eq &lt;- planes_clean %&gt;%
+  pivot_longer(
+    cols      = c(iata_equipment, icao_equipment),
+    names_to  = &quot;equipment_type&quot;,
+    values_to = &quot;equipment_code&quot;
+  ) %&gt;%
+  filter(!is.na(equipment_code)) %&gt;%
+  distinct(equipment_code, .keep_all = TRUE)
+
+
+# explode each route’s equipment list, then lookup plane_name &amp; type
+routes_eq &lt;- routes_geo %&gt;%
+  separate_rows(equipment, sep = &quot; &quot;) %&gt;%
+  left_join(
+    planes_eq,
+    by = c(&quot;equipment&quot; = &quot;equipment_code&quot;)
+  )
+
+
+# collapse back to one‐row‐per‐route, concatenating equipment info
+routes_final &lt;- routes_eq %&gt;%
+  group_by(airline, source_airport, destination_airport,
+           source_airport_id, destination_airport_id) %&gt;%
+  summarise(
+    equipment_codes  = toString(unique(equipment)),
+    equipment_types  = toString(unique(equipment_type)),
+    plane_names      = toString(unique(plane_name)),
+    .groups = &quot;drop&quot;
+  ) %&gt;%
+  # re‑attach all the geo + airline fields
+  left_join(
+    routes_geo,
+    by = c(&quot;airline&quot;, &quot;source_airport&quot;, &quot;destination_airport&quot;,
+           &quot;source_airport_id&quot;, &quot;destination_airport_id&quot;)
+  )</code></pre>
 <pre class="r"><code>glimpse(airlines_clean)</code></pre>
 <pre><code>## Rows: 1,255
 ## Columns: 8
@@ -568,7 +632,7 @@ routes_joined &lt;- routes_clean %&gt;%
 ## # ℹ 4 more variables: destination_airport_id &lt;int&gt;, codeshare &lt;chr&gt;,
 ## #   stops &lt;int&gt;, equipment &lt;chr&gt;</code></pre>
 <pre class="r"><code>glimpse(countries_clean)</code></pre>
-<pre><code>## Rows: 261
+<pre><code>## Rows: 259
 ## Columns: 3
 ## $ country &lt;chr&gt; &quot;Bonaire, Saint Eustatius and Saba&quot;, &quot;Aruba&quot;, &quot;Antigua and Bar…
 ## $ iso2    &lt;chr&gt; &quot;BQ&quot;, &quot;AW&quot;, &quot;AG&quot;, &quot;AE&quot;, &quot;AF&quot;, &quot;DZ&quot;, &quot;AZ&quot;, &quot;AL&quot;, &quot;AM&quot;, &quot;AO&quot;, &quot;A…
