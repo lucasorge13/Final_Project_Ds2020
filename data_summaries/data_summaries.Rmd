@@ -156,3 +156,55 @@ head(countries_clean)
 glimpse(planes_clean)
 head(planes_clean)
 ```
+
+
+### Airport Flight Amounts
+
+**How many flight are there to and from each airport**\
+Get the number of routes to and from each airport into one dataset\
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Flights to each airport
+flights_to_count <- routes_clean %>%
+  count(iata = destination_airport, name = "to_count")
+
+# Flights from each airport
+flights_from_count <- routes_clean %>%
+  count(iata = source_airport, name = "from_count")
+
+# Full join on iata and compute total traffic
+flight_traffic <- full_join(flights_to_count, flights_from_count, by = "iata") %>%
+  mutate(
+    to_count = replace_na(to_count, 0),
+    from_count = replace_na(from_count, 0),
+    flight_traffic = to_count + from_count
+  ) %>%
+  select(iata, flight_traffic)
+
+head(flight_traffic)
+```
+
+Make a graph showing this data\
+```{r}
+#Sort in descending order
+flight_traffic_sorted <- flight_traffic %>%
+  arrange(desc(flight_traffic))
+
+ggplot(flight_traffic_sorted, aes(x = reorder(iata, -flight_traffic), y = flight_traffic)) + geom_bar(stat = "identity") + labs(
+    x = "Airport (IATA Code)",
+    y = "Total Flights (To + From)"
+  )
+```
+
+That is way too many airports to see cleanly lets cut some down\
+```{r}
+top_airports <- flight_traffic %>% slice_max(flight_traffic, n=30)
+ggplot(top_airports, aes(y = reorder(iata, flight_traffic), x = flight_traffic)) + geom_bar(stat = "identity") + labs(
+    x = "Airport (IATA Code)",
+    y = "Total Flights (To + From)"
+  )
+```
+Here we can see ATL, Atlanta Airport, is the highest with almost 1300 flights in and out of it with ORD, Chicago O'Hare, and PEK, Beijing Capital, being the next highest.\
