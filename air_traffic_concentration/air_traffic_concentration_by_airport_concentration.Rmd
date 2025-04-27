@@ -1,0 +1,147 @@
+---
+title: "Global Air Traffic Concentration Analysis by Airport Concentration"
+author: "Lucas Martins Sorge"
+date: "2025-04-27"
+output: html_document
+---
+
+## Introduction
+
+This report investigates how global air traffic is distributed across airports using the OpenFlights dataset.\
+We analyze the concentration of flights among airports by visualizing the Lorenz Curve, calculating the Gini coefficient, and identifying top-contributing airports.
+
+------------------------------------------------------------------------
+
+## Data Preparation
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ineq)
+
+# Load cleaned flight traffic dataset
+flight_traffic <- read_csv("../cleaned_data/flight_traffic.csv")
+```
+
+------------------------------------------------------------------------
+
+## Airport Traffic Concentration Analysis
+
+## Lorenz Curve of Airport Traffic
+
+We first examine the distribution of total flight traffic among airports
+
+```{r}
+# Arrange airports by descending total flight traffic
+# Calculate cumulative sums and percentages for Lorenz curve plotting
+flight_traffic_sorted <- flight_traffic %>%
+  arrange(desc(flight_traffic)) %>%
+  mutate(
+    cumulative_flights = cumsum(flight_traffic),
+    total_flights = sum(flight_traffic),
+    cumulative_percent = cumulative_flights / total_flights,
+    airport_percent = row_number() / n()
+  )
+
+head(flight_traffic_sorted)
+
+# Plot the Lorenz Curve
+ggplot(flight_traffic_sorted, aes(x = airport_percent, y = cumulative_percent)) +
+  geom_line(color = "black", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  labs(
+    title = "Lorenz Curve of Global Air Traffic Concentration",
+    x = "Cumulative % of Airports",
+    y = "Cumulative % of Flights"
+  )
+
+```
+
+### Interpretation
+
+The Lorenz Curve is bowed significantly below the line of perfect equality, indicating a high concentration of air traffic among a small proportion of airports.
+
+------------------------------------------------------------------------
+
+## Gini Coefficient Calculation
+
+We compute the Gini coefficient to numerically measure the inequality in flight distribution across airports.
+
+```{r}
+# Calculate Gini Coefficient to quantify inequality of flight distribution
+gini_coefficient <- ineq(flight_traffic_sorted$flight_traffic, type = "Gini")
+gini_coefficient
+```
+
+### Interpretation
+
+The Gini coefficient is approximately **0.78**, confirming that global air traffic is highly concentrated among a few airports.
+
+------------------------------------------------------------------------
+
+## Flight Concentration by Airport Percentile
+
+We analyze what proportion of total flights are handled by the top 1%, 5%, and 10% of airports.
+
+```{r}
+# Concentration at different thresholds
+top_1_percent_threshold <- flight_traffic_sorted %>%
+  filter(airport_percent <= 0.01) %>%
+  summarise(percent_flights = max(cumulative_percent)) %>%
+  pull(percent_flights)
+
+top_5_percent_threshold <- flight_traffic_sorted %>%
+  filter(airport_percent <= 0.05) %>%
+  summarise(percent_flights = max(cumulative_percent)) %>%
+  pull(percent_flights)
+
+top_10_percent_threshold <- flight_traffic_sorted %>%
+  filter(airport_percent <= 0.10) %>%
+  summarise(percent_flights = max(cumulative_percent)) %>%
+  pull(percent_flights)
+
+cat("Top 1% of airports handle about", round(top_1_percent_threshold*100, 1), "% of flights.\n")
+cat("Top 5% of airports handle about", round(top_5_percent_threshold*100, 1), "% of flights.\n")
+cat("Top 10% of airports handle about", round(top_10_percent_threshold*100, 1), "% of flights.\n")
+```
+
+### Interpretation
+
+-   The top **1%** of airports handle about **20%** of all flights.
+
+-   The top **5%** of airports handle about **53%** of all flights.
+
+-   The top **10%** of airports handle about **70%** of all flights.
+
+These findings demonstrate the extreme concentration of air traffic at a small number of major hubs.
+
+------------------------------------------------------------------------
+
+## Top 10 Airports by Total Flights
+
+Finally, we identify the top airports contributing the most to global traffic.
+
+```{r}
+# Top 10 airports by traffic
+top_airports_table <- flight_traffic_sorted %>%
+  slice_max(flight_traffic, n = 10) %>%
+  select(iata, flight_traffic, cumulative_percent)
+
+top_airports_table
+```
+
+### Interpretation
+
+The busiest airports, including **Atlanta (ATL)**, **Chicago O'Hare (ORD)**, and **Beijing Capital (PEK)**, dominate the global air traffic network, accounting for a substantial proportion of total flights.
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+Our analysis shows that global air traffic is highly concentrated.
+
+\
+The Lorenz Curve and a high Gini coefficient (\~0.78) confirm that a small percentage of airports handle a disproportionately large share of flights.\
+
+This concentration reflects the critical role of a limited number of international hubs in global aviation connectivity.

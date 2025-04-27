@@ -51,11 +51,11 @@ library(tidyr)
 
 ```{r}
 #Define file paths
-airlines_path <- "../data/airlines.dat"
-airports_path <- "../data/airports.dat"
-countries_path <- "../data/countries.dat"
-planes_path <- "../data/planes.dat"
-routes_path <- "../data/routes.dat"
+airlines_path <- "../raw_data/airlines.dat"
+airports_path <- "../raw_data/airports.dat"
+countries_path <- "../raw_data/countries.dat"
+planes_path <- "../raw_data/planes.dat"
+routes_path <- "../raw_data/routes.dat"
 
 airlines <- read_csv(airlines_path, col_names = FALSE, show_col_types = FALSE) %>%
   set_names(c("airline_id", "name", "alias", "iata", "icao", "callsign", "country", "active")) %>%
@@ -254,6 +254,8 @@ flight_traffic <- full_join(flights_to_count, flights_from_count, by = "iata") %
   select(iata, flight_traffic)
 
 head(flight_traffic)
+
+write_csv(flight_traffic, "../cleaned_data/flight_traffic.csv")
 ```
 
 Make a graph showing this data\
