@@ -218,6 +218,7 @@ head(airports_clean)
 
 glimpse(routes_clean)
 head(routes_clean)
+write_csv(routes_clean, "routes_clean.csv")
 
 glimpse(countries_clean)
 head(countries_clean)

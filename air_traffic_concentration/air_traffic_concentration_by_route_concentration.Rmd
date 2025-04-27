@@ -1,0 +1,120 @@
+---
+title: "Global Air Traffic Concentration Analysis by Route Concentration"
+author: "Lucas Martins Sorge"
+date: "2025-04-27"
+output: html_document
+---
+
+## Route-Based Concentration Analysis
+
+Now, we shift focus from airport-level concentration to route-level concentration.\
+We investigate how flight traffic is distributed across different flight routes (airport pairs).
+
+------------------------------------------------------------------------
+
+## Data Preparation
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ineq)
+```
+
+```{r}
+routes_clean <- read_csv("../cleaned_data/routes_clean.csv")
+
+# Create a unique route ID (source → destination)
+routes_clean <- routes_clean %>%
+  mutate(route = paste(source_airport, destination_airport, sep = " → "))
+
+# Count number of flights per route
+route_traffic <- routes_clean %>%
+  count(route, name = "flight_count") %>%
+  arrange(desc(flight_count))
+```
+
+------------------------------------------------------------------------
+
+## Route Traffic Concentration Analysis
+
+## Lorenz Curve of Route Traffic
+
+We first examine how flight traffic is distributed across routes.
+
+```{r}
+# Calculate cumulative stats for Lorenz curve
+route_traffic <- route_traffic %>%
+  mutate(
+    cumulative_flights = cumsum(flight_count),
+    total_flights = sum(flight_count),
+    cumulative_percent = cumulative_flights / total_flights,
+    route_percent = row_number() / n()
+  )
+```
+
+```{r}
+# Plot Lorenz Curve for route concentration
+ggplot(route_traffic, aes(x = route_percent, y = cumulative_percent)) +
+  geom_line(color = "black", linewidth = 1.2) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  labs(
+    title = "Lorenz Curve of Global Air Traffic Concentration (Routes)",
+    x = "Cumulative % of Routes",
+    y = "Cumulative % of Flights"
+  ) +
+  theme_minimal()
+```
+
+### Interpretation
+
+The Lorenz Curve for routes shows moderate inequality in the distribution of global air traffic across different flight connections.\
+
+While there is still some concentration among a smaller subset of routes, the curve lies closer to the line of perfect equality compared to the airport-level analysis, suggesting that flights are more evenly distributed across many routes than across airports.
+
+------------------------------------------------------------------------
+
+## Gini Coefficient for Route Traffic
+
+We compute the Gini coefficient for route traffic distribution.
+
+```{r}
+# Gini for route traffic
+gini_route <- ineq(route_traffic$flight_count, type = "Gini")
+cat("Gini Coefficient for Route Traffic:", round(gini_route, 3))
+```
+
+### Interpretation
+
+The Gini coefficient for route traffic is approximately 0.31, which indicates a moderate level of concentration.\
+
+Unlike airports — where a small number of hubs dominate total traffic — the distribution of flights across different routes is less extreme, with a larger variety of flight connections contributing meaningfully to global traffic flows.
+
+------------------------------------------------------------------------
+
+## Top 10 Busiest Routes
+
+We identify the routes with the highest number of flights.
+
+```{r}
+# Top 10 busiest routes
+top_routes_table <- route_traffic %>%
+  slice_max(flight_count, n = 10)
+
+top_routes_table
+```
+
+### Interpretation
+
+The busiest routes, such as major domestic and international connections (e.g., ORD → ATL, JFK → LHR), account for a significant portion of global flights, reinforcing the observed concentration patterns.
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+Our analysis reveals that global air traffic exhibits different levels of concentration depending on the unit of analysis.
+
+At the airport level, traffic is highly concentrated, with a small fraction of airports (top 1%) handling a disproportionately large share of flights, as evidenced by a Lorenz Curve that is sharply bowed and a high Gini coefficient of approximately 0.78.
+
+In contrast, at the route level, traffic is more evenly distributed across many connections. The Lorenz Curve for routes is closer to the line of perfect equality, and the Gini coefficient of approximately 0.31 indicates moderate concentration.
+
+These results suggest that while a few major hubs dominate global aviation in terms of airport traffic, the diversity of individual flight routes remains relatively broader, reflecting a more distributed global air network in terms of connections.
