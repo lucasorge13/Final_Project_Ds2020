@@ -215,6 +215,7 @@ head(airlines_clean)
 
 glimpse(airports_clean)
 head(airports_clean)
+write_csv(airports_clean, "airports_clean.csv")
 
 glimpse(routes_clean)
 head(routes_clean)
