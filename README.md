@@ -48,7 +48,7 @@ Data was obtained from [OpenFlights](https://openflights.org/data.php):
 ## Results
 
 *Question 1:*
-# What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
+### What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
 
 
 
