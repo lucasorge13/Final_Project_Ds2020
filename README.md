@@ -10,7 +10,7 @@ This data science project explores global air travel patterns using datasets fro
 Questions
 - 
 - 
-- What country has the most amount of airports? Where are the countries with the most airports located?
+- What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
 - How concentrated is global air traffic? 
 - How does airport connectivity vary between developed and developing countries?
 
@@ -48,6 +48,8 @@ Data was obtained from [OpenFlights](https://openflights.org/data.php):
 ## Results
 
 *Question 1:*
+# What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
+
 
 
 *Question 2:*
