@@ -7,12 +7,12 @@
 ## Introduction
 This data science project explores global air travel patterns using datasets from the OpenFlights database. We analyze airline networks, airport connectivity, geographic coverage, and operational characteristics to reveal insights into global aviation trends. Our goal during this project is to find when and where air traffic is more concentrated. We also want to analyze the structure of global airline route networks, examine geographic coverage and identify underserved regions, and study operational characteristics, including fleet usage and route lengths.
 
-Questions
-- 
-- 
-- What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
+Questions:
 - How concentrated is global air traffic? 
 - How does airport connectivity vary between developed and developing countries?
+- What country has the most airports? Where are the countries with the most airports located, and what patterns are there?
+- Brandon's
+- Brandon's
 
 ## Data Sources
 Data was obtained from [OpenFlights](https://openflights.org/data.php):
