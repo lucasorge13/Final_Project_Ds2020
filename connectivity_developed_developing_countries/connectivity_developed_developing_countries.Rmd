@@ -1,0 +1,301 @@
+---
+title: "Global Airport Connectivity: A Comparison Between Developed and Developing Countries"
+author: "Lucas Martins Sorge"
+date: "2025-05-01"
+output: html_document
+---
+
+## Introduction
+
+Air transportation plays a crucial role in global mobility, trade, tourism, and economic development. The structure of the global air network reflects and reinforces economic hierarchies: countries with greater infrastructure and economic power often have more extensive airport connectivity, serving as critical nodes in international travel and logistics.
+
+This report investigates how airport connectivity varies between developed and developing countries. Using a cleaned dataset of global airports and flight routes, we classify each airport by its country's development status and evaluate connectivity through the number of outgoing routes.
+
+We analyze differences at both the airport and country levels, employing statistical testing and network visualizations to examine disparities in global access. Our objective is to uncover patterns in air travel accessibility and infrastructure distribution, shedding light on broader geographic and economic inequalities in global transportation.
+
+------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(countrycode)
+library(maps)
+library(ggthemes)
+library(igraph)
+library(ggraph)
+library(tidygraph)
+library(ggrepel)
+library(ineq)
+library(knitr)
+library(scales)
+library(forcats)
+```
+
+## Country Classification and Data Preparation
+
+To compare airport connectivity between developed and developing countries, each airport in the dataset was first matched with its corresponding country. A country classification table was created based on common international standards, grouping nations into either "developed" or "developing" categories.
+
+This classification was merged with the airport dataset, allowing us to assign a development status to each airport. As a result, we obtained a labeled dataset where every airport reflects its country’s economic classification. This step is crucial for enabling all downstream comparisons of connectivity metrics by development status.
+
+The classification summary shows that the dataset contains a larger number of airports in developed countries, though airports from a wide geographic range of developing countries are also represented.
+
+```{r}
+airports <- read_csv("../cleaned_data/airports_clean.csv")
+
+country_status <- tibble::tribble(
+  ~country,             ~status,
+  # Developed countries
+  "United States",      "developed",
+  "Canada",             "developed",
+  "Germany",            "developed",
+  "France",             "developed",
+  "United Kingdom",     "developed",
+  "Japan",              "developed",
+  "Australia",          "developed",
+  "Italy",              "developed",
+  "Spain",              "developed",
+  "South Korea",        "developed",
+  "Netherlands",        "developed",
+  "Sweden",             "developed",
+  "Switzerland",        "developed",
+  "Norway",             "developed",
+  "New Zealand",        "developed",
+  "Belgium",            "developed",
+  "Austria",            "developed",
+  "Finland",            "developed",
+  "Denmark",            "developed",
+  "Hong Kong",            "developed",
+  "Singapore",            "developed",
+  "Macau",                "developed",
+  "Luxembourg",           "developed",
+  "Malta",                "developed",
+  
+  # Developing countries
+  "Brazil",             "developing",
+  "Bahrain",            "developing",
+  "United Arab Emirates", "developing",
+  "Qatar",              "developing",
+  "Kuwait",             "developing",
+  "India",              "developing",
+  "China",              "developing",
+  "Mexico",             "developing",
+  "South Africa",       "developing",
+  "Nigeria",            "developing",
+  "Indonesia",          "developing",
+  "Philippines",        "developing",
+  "Pakistan",           "developing",
+  "Bangladesh",         "developing",
+  "Vietnam",            "developing",
+  "Thailand",           "developing",
+  "Colombia",           "developing",
+  "Egypt",              "developing",
+  "Kenya",              "developing",
+  "Argentina",          "developing",
+  "Peru",               "developing",
+  "Morocco",            "developing",
+  "Turkey",             "developing"
+)
+
+
+# Classify each airport as 'developed' or 'developing' based on income group
+airports_status <- airports %>%
+  left_join(country_status, by = "country")
+
+# View summary of classifications
+airports_status %>% 
+  count(status, sort = TRUE)
+```
+
+------------------------------------------------------------------------
+
+## Airport-Level Connectivity Analysis
+
+With the development status assigned to each airport, we proceeded to evaluate their connectivity by analyzing flight routes. Using the routes dataset, we calculated the number of outgoing routes per airport—defined as the count of distinct connections where each airport serves as a source.
+
+This connectivity measure was merged with the airport classification data, resulting in a comprehensive dataset containing each airport’s number of routes and development status. Airports without outgoing connections were retained with a value of zero, ensuring a complete representation.
+
+To explore differences in connectivity, we calculated summary statistics by development status and visualized the distribution using a log-scaled histogram. The results suggest that airports in developed countries tend to have higher average connectivity, although there is overlap across both groups. The histogram highlights a long tail, with a small number of highly connected hubs driving the mean upward in both categories.
+
+```{r}
+routes <- read_csv("../cleaned_data/routes_clean.csv")
+
+connectivity <- routes %>%
+  filter(!is.na(source_airport) & !is.na(destination_airport)) %>%
+  group_by(source_airport) %>%
+  summarise(connectivity = n(), .groups = "drop")
+
+## Merge with airport info and development status
+airport_connectivity <- airports_status %>%
+  left_join(connectivity, by = c("iata" = "source_airport")) %>%
+  mutate(connectivity = replace_na(connectivity, 0))
+
+## Check distribution by development status
+airport_connectivity %>%
+  group_by(status) %>%
+  summarise(
+    mean_connectivity = mean(connectivity),
+    median_connectivity = median(connectivity),
+    max_connectivity = max(connectivity),
+    n_airports = n(),
+    .groups = "drop"
+  )
+
+country_connectivity <- airport_connectivity %>%
+  group_by(country, status) %>%
+  summarise(
+    total_connectivity = sum(connectivity, na.rm = TRUE),
+    avg_connectivity = mean(connectivity, na.rm = TRUE),
+    median_connectivity = median(connectivity, na.rm = TRUE),
+    n_airports = n(),
+    .groups = "drop"
+  )
+
+top20_countries <- country_connectivity %>%
+  slice_max(avg_connectivity, n = 20)
+
+ggplot(top20_countries, aes(x = fct_reorder(country, avg_connectivity), y = avg_connectivity, fill = status)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  labs(
+    title = "Top 20 Countries by Average Airport Connectivity",
+    x = NULL,
+    y = "Average Number of Routes per Airport"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 9, hjust = 1),
+    axis.text.x = element_text(size = 10),
+    plot.title = element_text(size = 14, face = "bold"),
+    legend.position = "bottom"
+  )
+```
+
+------------------------------------------------------------------------
+
+## Statistical Comparison of Country-Level Connectivity
+
+To formally assess whether airport connectivity differs significantly between developed and developing countries, we conducted two statistical tests comparing their average airport connectivity:
+
+-   A **Welch Two Sample t-test**, which assumes unequal variances and tests for differences in group means.
+-   A **Mann-Whitney U test** (Wilcoxon rank-sum), a non-parametric alternative that compares medians and does not assume normality.
+
+Both tests yielded statistically significant results (p-values \< 0.05), confirming that the average airport connectivity is **significantly higher in developed countries** than in developing ones. This reinforces the visual and descriptive patterns observed in earlier sections.
+
+```{r}
+## T-Test (parametric)
+t_test_result <- t.test(
+  avg_connectivity ~ status,
+  data = country_connectivity
+)
+t_test_result
+
+## Mann-Whitney U Test (non-parametric)
+wilcox_test_result <- wilcox.test(
+  avg_connectivity ~ status,
+  data = country_connectivity,
+  exact = FALSE # better for larger samples
+)
+wilcox_test_result
+
+```
+
+------------------------------------------------------------------------
+
+## Geographic Visualization of Global Connectivity
+
+To better illustrate the spatial distribution of airport connectivity, we created a world map overlaying airports and their outgoing routes. Each airport is plotted at its geographic coordinates, with node size reflecting the number of outgoing connections and node color indicating development status.
+
+Flight routes between airports are shown as faint gray lines, providing a visual representation of global network density. Additionally, the top 10 most connected airports are labeled with their IATA codes, offering immediate recognition of key international hubs.
+
+This visualization highlights the geographic concentration of global air traffic, revealing that the most highly connected airports are predominantly located in developed countries across North America, Europe, and East Asia. In contrast, airports in developing countries are generally smaller and more regionally focused, contributing fewer international connections to the global network.
+
+```{r}
+# Use all airports with at least 1 route and known coordinates
+airports_geo <- airport_connectivity %>%
+  filter(!is.na(longitude), !is.na(latitude), connectivity > 0)
+
+# Filter routes that link only valid airports from above
+edges_geo <- routes %>%
+  filter(source_airport %in% airports_geo$iata,
+         destination_airport %in% airports_geo$iata) %>%
+  left_join(airports_geo %>% select(iata, lon_from = longitude, lat_from = latitude),
+            by = c("source_airport" = "iata")) %>%
+  left_join(airports_geo %>% select(iata, lon_to = longitude, lat_to = latitude),
+            by = c("destination_airport" = "iata")) %>%
+  filter(!is.na(lon_from), !is.na(lat_from), !is.na(lon_to), !is.na(lat_to))
+
+# World map
+world <- map_data("world")
+
+# Label top hubs
+top_hubs <- airports_geo %>%
+  arrange(desc(connectivity)) %>%
+  slice_head(n = 10)
+
+# Plot
+ggplot() +
+  geom_map(data = world, map = world,
+           aes(x = long, y = lat, map_id = region),
+           fill = "gray95", color = "gray80", size = 0.15) +
+
+  geom_segment(data = edges_geo,
+               aes(x = lon_from, y = lat_from, xend = lon_to, yend = lat_to),
+               color = "gray60", alpha = 0.1, linewidth = 0.1) +
+
+  geom_point(data = airports_geo,
+             aes(x = longitude, y = latitude, size = connectivity, color = status),
+             alpha = 0.85) +
+
+  geom_text_repel(data = top_hubs,
+                  aes(x = longitude, y = latitude, label = iata),
+                  size = 3, color = "black") +
+
+  scale_size_continuous(range = c(1, 5)) +
+  scale_color_manual(values = c("developed" = "#1f78b4", "developing" = "#e31a1c", "NA" = "gray70")) +
+
+  labs(title = "Global Airport Connectivity Map",
+       subtitle = "Node size = number of routes; Node color = development status") +
+
+  theme_minimal(base_family = "") +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    legend.title = element_blank()
+  )
+```
+
+------------------------------------------------------------------------
+
+## Top 10 Most Connected Countries
+
+The table below lists the ten countries with the highest average airport connectivity, based on the number of outgoing routes per airport. These countries represent key global aviation hubs, reflecting strong infrastructure, strategic geographic positioning, and significant international air traffic.
+
+As expected, the list is dominated by developed countries. However, a few highly connected developing nations—often small, trade-oriented, or oil-rich—also appear, demonstrating that national air traffic influence is not solely determined by development status.
+
+```{r}
+country_connectivity %>%
+  arrange(desc(avg_connectivity)) %>%
+  head(10) %>%
+  kable(caption = "Top 10 Countries by Average Airport Connectivity")
+```
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+This analysis reveals clear differences in airport connectivity between developed and developing countries. Airports located in developed countries tend to have significantly higher average connectivity, both at the individual and national levels.
+
+The Welch Two Sample t-test showed a statistically significant difference in average airport connectivity (p = 0.0079), supported by a non-parametric Mann-Whitney test (p = 0.0228). On average, developed countries maintain roughly twice the connectivity per airport compared to developing countries.
+
+The global map visualizations further illustrate this imbalance: major hubs are concentrated in developed regions, while many airports in developing countries are less integrated into the global network. Some exceptions exist, such as the UAE or Singapore, which show high connectivity despite their classification as developing or microstate economies.
+
+These disparities highlight how air transport infrastructure and global integration are unevenly distributed. The insights here can inform future infrastructure planning and policy discussions around transportation equity and accessibility.
+
+### Limitations
+
+-   The analysis uses route count as a proxy for connectivity, without accounting for passenger volume or frequency.
+-   Country status classifications were simplified to "developed"/"developing" based on World Bank-like criteria, which may overlook economic nuances.
+-   Routes are historical as of 2014, so newer airports or changes in connectivity are not reflected.
