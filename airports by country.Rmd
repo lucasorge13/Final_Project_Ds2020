@@ -37,6 +37,14 @@ ggplot(top_25_countries, aes(x = reorder(country, n), y = n)) +
        y = "Count") +
   theme_minimal()
 
+ggsave(
+  "figures/airports.png",
+  plot = last_plot(),
+  width = 6,
+  height = 4,
+)
+
+
 ```
 
 ### Comments
@@ -65,6 +73,12 @@ ggplot() +
        y = "Latitude") +
   theme_minimal()
 
+ggsave(
+  "figures/countries.png",
+  plot = last_plot(),
+  width = 6,
+  height = 4,
+)
 ```
 
 ### Comments
