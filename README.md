@@ -12,15 +12,12 @@ output:
 - [Final_Project_Ds2020](#final_project_ds2020)
 - [Global Air Travel Analysis using
   OpenFlights](#global-air-travel-analysis-using-openflights)
-  - [Lucas Martins Sorge, Nina De Grandis, Brandon
-    Merrick](#lucas-martins-sorge-nina-de-grandis-brandon-merrick)
   - [Introduction](#introduction)
   - [Data Sources](#data-sources)
   - [Project Objectives](#project-objectives)
   - [Completed Steps](#completed-steps)
   - [Methodology](#methodology)
   - [Data Cleaning](#data-cleaning)
-    - [Variables](#variables)
   - [Results](#results)
   - [Conclusion](#conclusion)
 
@@ -28,7 +25,7 @@ output:
 
 # Global Air Travel Analysis using OpenFlights
 
-### Lucas Martins Sorge, Nina De Grandis, Brandon Merrick
+**Lucas Martins Sorge, Nina De Grandis, Brandon Merrick**
 
 ## Introduction
 
@@ -77,7 +74,21 @@ airports. - `planes.dat`: Aircraft types and equipment information. -
 
 ## Data Cleaning
 
-### Variables
+We cleaned and prepared five OpenFlights datasets (airlines, airports,
+routes, planes, countries) by:
+
+- Replacing `"\\N"` with `NA` and removing rows with missing critical
+  fields.
+- Filtering for relevant records: active airlines, valid airports, and
+  direct routes only.
+- Converting data types (e.g., IDs, coordinates) for consistency.
+- Standardizing column names using `clean_names()`.
+- Joining datasets: routes were linked with airline, airport, country,
+  and plane details.
+- Exploding and summarizing equipment data for route-level analysis.
+
+The result is a cleaned and merged dataset ready for analysis and
+visualization.
 
 ## Results
 
@@ -92,7 +103,7 @@ airports. - `planes.dat`: Aircraft types and equipment information. -
 knitr::include_graphics("figures/lorenz_airport.png")
 ```
 
-<img src="figures/lorenz_airport.png" width="1800" />
+![](figures/lorenz_airport.png)<!-- -->
 
 - **Top-percentile shares**
   - **Top 1%** of airports handle **~20%** of all flights  
@@ -111,7 +122,7 @@ knitr::include_graphics("figures/lorenz_airport.png")
 knitr::include_graphics("figures/lorenz_route.png")
 ```
 
-<img src="figures/lorenz_route.png" width="1800" />
+![](figures/lorenz_route.png)<!-- -->
 
 - **Key routes**
   - Top connections (e.g., **ORD → ATL**, **JFK → LHR**) are busiest but
@@ -148,7 +159,7 @@ developing countries?**
 knitr::include_graphics("figures/global_connectivity_map.png")
 ```
 
-<img src="figures/global_connectivity_map.png" width="3000" />
+![](figures/global_connectivity_map.png)<!-- -->
 
 - **Conclusion**
   - Global airport connectivity reflects broader economic inequalities.
@@ -164,7 +175,7 @@ Top 25 Countries by Number of Airports
 knitr::include_graphics("figures/airports.png")
 ```
 
-<img src="figures/airports.png" width="1800" />
+![](figures/airports.png)<!-- -->
 
 - This bar chart shows the top 25 countries by number of airports, and
   how many airports they have. I chose to only shows the top 25 because
@@ -181,7 +192,7 @@ knitr::include_graphics("figures/airports.png")
 knitr::include_graphics("figures/countries.png")
 ```
 
-<img src="figures/countries.png" width="1800" />
+![](figures/countries.png)<!-- -->
 
 - This map shows where the airports for the top 25 countries by number
   of airports are located.
