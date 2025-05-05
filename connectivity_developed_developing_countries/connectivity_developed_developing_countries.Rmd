@@ -65,11 +65,12 @@ country_status <- tibble::tribble(
   "Austria",            "developed",
   "Finland",            "developed",
   "Denmark",            "developed",
-  "Hong Kong",            "developed",
-  "Singapore",            "developed",
-  "Macau",                "developed",
-  "Luxembourg",           "developed",
-  "Malta",                "developed",
+  "Hong Kong",          "developed",
+  "Singapore",          "developed",
+  "Macau",              "developed",
+  "Luxembourg",         "developed",
+  "Malta",              "developed",
+  "Russia",             "developed",
   
   # Developing countries
   "Brazil",             "developing",
@@ -235,36 +236,46 @@ top_hubs <- airports_geo %>%
   slice_head(n = 10)
 
 # Plot
-ggplot() +
-  geom_map(data = world, map = world,
-           aes(x = long, y = lat, map_id = region),
-           fill = "gray95", color = "gray80", size = 0.15) +
+connectivity_plot <- ggplot() +
+    geom_map(data = world, map = world,
+             aes(x = long, y = lat, map_id = region),
+             fill = "gray95", color = "gray80", size = 0.15) +
+  
+    geom_segment(data = edges_geo,
+                 aes(x = lon_from, y = lat_from, xend = lon_to, yend = lat_to),
+                 color = "gray60", alpha = 0.1, linewidth = 0.1) +
+  
+    geom_point(data = airports_geo,
+               aes(x = longitude, y = latitude, size = connectivity, color = status),
+               alpha = 0.85) +
+  
+    geom_text_repel(data = top_hubs,
+                    aes(x = longitude, y = latitude, label = iata),
+                    size = 3, color = "black") +
+  
+    scale_size_continuous(range = c(1, 5)) +
+    scale_color_manual(values = c("developed" = "#1f78b4", "developing" = "#e31a1c", "NA" = "gray70")) +
+  
+    labs(title = "Global Airport Connectivity Map",
+         subtitle = "Node size = number of routes; Node color = development status") +
+  
+    theme_minimal(base_family = "") +
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12),
+      legend.title = element_blank()
+    )
 
-  geom_segment(data = edges_geo,
-               aes(x = lon_from, y = lat_from, xend = lon_to, yend = lat_to),
-               color = "gray60", alpha = 0.1, linewidth = 0.1) +
+ggsave(
+  "../figures/global_connectivity_map.png",
+  plot = connectivity_plot,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
 
-  geom_point(data = airports_geo,
-             aes(x = longitude, y = latitude, size = connectivity, color = status),
-             alpha = 0.85) +
-
-  geom_text_repel(data = top_hubs,
-                  aes(x = longitude, y = latitude, label = iata),
-                  size = 3, color = "black") +
-
-  scale_size_continuous(range = c(1, 5)) +
-  scale_color_manual(values = c("developed" = "#1f78b4", "developing" = "#e31a1c", "NA" = "gray70")) +
-
-  labs(title = "Global Airport Connectivity Map",
-       subtitle = "Node size = number of routes; Node color = development status") +
-
-  theme_minimal(base_family = "") +
-  theme(
-    legend.position = "bottom",
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    legend.title = element_blank()
-  )
+connectivity_plot
 ```
 
 ------------------------------------------------------------------------
