@@ -215,7 +215,7 @@ knitr::include_graphics("figures/countries.png")
   region of the world has a country with many airports, making travel
   very accessible.
 
-- In conclusion, the location and number of airports in a given country is highly dependent on population.
+In conclusion, the location and number of airports in a given country is highly dependent on population.
 
 *Question 4:*
 
