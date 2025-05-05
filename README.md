@@ -153,6 +153,7 @@ knitr::include_graphics("figures/countries.png")
 
 -   This map shows where the airports for the top 25 countries by number of airports are located.
 
+<<<<<<< HEAD
 -   I notice several trends when looking at this map. First, many of the airports are along the coast. This makes sense as these may be more populated areas, especially when accounting for tourism and economic activity.
 
 -   When talking about population, this may be why some areas are blank and without an airport for miles. Australia for example, has most of their population centered in big cities and along the coasts. An airport in the middle of Australia isn’t very necessary. This is similar to Russia, where there is a seeming lack of airports for the size of the country. Russia’s climate and population distribution accounts for this.
@@ -160,6 +161,9 @@ knitr::include_graphics("figures/countries.png")
 -   Another noticeable trend is that Africa is completely left out of the top 25, except for one country, being South Africa. Most every other region of the world has a country with many airports, making travel very accessible.
 
 -   In conclusion, the location and number of airports in a given country is highly dependent on population.
+=======
+In conclusion, the location and number of airports in a given country is highly dependent on population.
+>>>>>>> ba38bd545b178a0099b541beda9b4f78a8a7335e
 
 *Question 4:*
 
