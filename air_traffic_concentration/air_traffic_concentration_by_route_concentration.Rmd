@@ -63,6 +63,15 @@ ggplot(route_traffic, aes(x = route_percent, y = cumulative_percent)) +
     y = "Cumulative % of Flights"
   ) +
   theme_minimal()
+
+ggsave(
+  filename   = "../figures/lorenz_route.png",
+  plot       = last_plot(),
+  width      = 6,
+  height     = 4,
+  units      = "in",
+  dpi        = 300
+)
 ```
 
 ### Interpretation
