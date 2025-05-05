@@ -173,9 +173,12 @@ knitr::include_graphics("figures/airports.png")
   25 has only 45 or less airports.
 - The United States takes a staggering lead, with 1251 airports. The
   next closest is Canada, with 380.
-- Only the top 10 countries have 100 or more airports. - These top 10
-  countries are among the most populated countries in the world, which
-  would make sense why they have the most airports.
+- Only the top 10 countries have 100 or more airports.
+- These top 10 countries are among the most populated countries in the world, which would make sense why they have the most airports.
+
+
+
+Airport Lcoations for Top 25 Countries by Number of Airports
 
 ``` r
 knitr::include_graphics("figures/countries.png")
