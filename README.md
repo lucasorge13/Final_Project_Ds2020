@@ -1,13 +1,14 @@
----
-title: "Final_Project_Ds2020"
-author: "Lucas Martins Sorge, Nina De Grandis, Brandon Merrick"
-date: "2025-05-04"
-output: 
-  md_document:
-    variant: gfm
-    toc: true
-    preserve_yaml: true
----
+- [Final_Project_Ds2020](#final_project_ds2020)
+- [Global Air Travel Analysis using
+  OpenFlights](#global-air-travel-analysis-using-openflights)
+  - [Introduction](#introduction)
+  - [Data Sources](#data-sources)
+  - [Project Objectives](#project-objectives)
+  - [Completed Steps](#completed-steps)
+  - [Methodology](#methodology)
+  - [Data Cleaning](#data-cleaning)
+  - [Results](#results)
+  - [Conclusion](#conclusion)
 
 - [Final_Project_Ds2020](#final_project_ds2020)
 - [Global Air Travel Analysis using
@@ -212,7 +213,26 @@ knitr::include_graphics("figures/countries.png")
   region of the world has a country with many airports, making travel
   very accessible.
 
-*Question 4:*
+*Question 4:* **What airports have the most unique flights to and from
+them**
+
+- **Majority are in the US**
+  - The highest by far is ATL, but 4 of the top 10 are also in the US
+    (ORD, LAX, DFW, and JFK)
+- **China has a few big ones**
+  - The 3rd largest, PEK, as well as PVG are in China
+  - Other Asian countries with large airports are Singapore and South
+    Korea
+- **Remaining Large Airports are all in Europe**
+  - UK, France, and Germany are the main countries with large airports
+  - Surrounding Western European countries like Spain and the
+    Netherlands also have some large airports.
+
+``` r
+knitr::include_graphics("figures/numOfFlights.png")
+```
+
+![](figures/numOfFlights.png)<!-- -->
 
 *Question 5:*
 

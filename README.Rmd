@@ -132,7 +132,21 @@ knitr::include_graphics("figures/countries.png")
 -   When talking about population, this may be why some areas are blank and without an airport for miles. Australia for example, has most of their population centered in big cities and along the coasts. An airport in the middle of Australia isn't very necessary. This is similar to Russia, where there is a seeming lack of airports for the size of the country. Russia's climate and population distribution accounts for this.
 -   Another noticeable trend is that Africa is completely left out of the top 25, except for one country, being South Africa. Most every other region of the world has a country with many airports, making travel very accessible.
 
-*Question 4:*
+*Question 4:* **What airports have the most unique flights to and from them**
+
+- **Majority are in the US**
+  - The highest by far is ATL, but 4 of the top 10 are also in the US (ORD, LAX, DFW, and JFK)
+
+- **China has a few big ones**
+  - The 3rd largest, PEK, as well as PVG are in China
+  - Other Asian countries with large airports are Singapore and South Korea
+  
+- **Remaining Large Airports are all in Europe**
+  - UK, France, and Germany are the main countries with large airports
+  - Surrounding Western European countries like Spain and the Netherlands also have some large airports.
+```{r}
+knitr::include_graphics("figures/numOfFlights.png")
+```
 
 *Question 5:*
 

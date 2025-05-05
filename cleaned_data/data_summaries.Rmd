@@ -275,9 +275,12 @@ ggplot(flight_traffic_sorted, aes(x = reorder(iata, -flight_traffic), y = flight
 That is way too many airports to see cleanly lets cut some down\
 ```{r}
 top_airports <- flight_traffic %>% slice_max(flight_traffic, n=30)
-ggplot(top_airports, aes(y = reorder(iata, flight_traffic), x = flight_traffic)) + geom_bar(stat = "identity") + labs(
-    x = "Airport (IATA Code)",
-    y = "Total Flights (To + From)"
+ggplot(top_airports, aes(y = reorder(iata, flight_traffic), x = flight_traffic - 500)) + geom_bar(stat = "identity") + labs(
+    x = "Total Flights (To + From) Past 500",
+    y = "Airport IATA Code"
   )
+ggsave(
+  "../figures/numOfFlights.png"
+)
 ```
 Here we can see ATL, Atlanta Airport, is the highest with almost 1300 flights in and out of it with ORD, Chicago O'Hare, and PEK, Beijing Capital, being the next highest.\
