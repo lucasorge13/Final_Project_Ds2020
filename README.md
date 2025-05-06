@@ -241,3 +241,5 @@ them**
 *Question 5:*
 
 ## Conclusion
+
+In conclusion, this analysis has helped us understand global air travel and the trends and patterns we were looking for. The biggest thing we concluded that had an effect on global air travel is population. This affects where airports are located, how many per country, how large the airport is, and more. More developed countries also have a better air travel system. The largest and most frequented airports can be found in countries like the US and China, highly developed and highly populated. We also found that many places have two types of structure; small hubs that are used more often, and a wider range of routes that handle the rest of longer flights to all over the world. Further research that could be done is comparing the data direcly to population maps. We could also examine the infrastructure and ecomic standings of the countries in the data set and see if they have an effect on air travel in that given country. 
