@@ -284,3 +284,69 @@ ggsave(
 )
 ```
 Here we can see ATL, Atlanta Airport, is the highest with almost 1300 flights in and out of it with ORD, Chicago O'Hare, and PEK, Beijing Capital, being the next highest.\
+
+**Amount of each kind of plane in use**
+```{r}
+manufacturer <- c(
+  "Aerospatiale" = "Aerospatiale",
+  "Airbus" = "Airbus",
+  "Antonov" = "Antonov",
+  "Avro" = "Avro",
+  "BAe" = "BAe",
+  "Beechcraft" = "Beechcraft",
+  "Bell" = "Bell",
+  "Boeing" = "Boeing",
+  "Bombardier" = "Bombardier",
+  "British Aerospace" = "BAC",
+  "COMAC" = "COMAC",
+  "Canadair" = "Canadair",
+  "Cessna" = "Cessna",
+  "Concorde" = "Concorde",
+  "Dassault" = "Dassault",
+  "De Havilland" = "De Havilland",
+  "Douglas" = "Douglas",
+  "Embraer" = "Embraer",
+  "Fairchild" = "Fairchild",
+  "Fokker" = "Fokker",
+  "Gulfstream" = "Gulfstream",
+  "Harbin" = "Harbin",
+  "Hawker" = "Hawker",
+  "Ilyushin" = "Ilyushin",
+  "Learjet" = "Learjet",
+  "Lockheed" = "Lockheed",
+  "McDonnell" = "McDonnell",
+  "NAMC" = "NAMC",
+  "Partenavia" = "Partenavia",
+  "Pilatus" = "Pilatus",
+  "Piper" = "Piper",
+  "Saab" = "Saab",
+  "Shorts" = "Shorts",
+  "Sikorsky" = "Sikorsky",
+  "Sukhoi" = "Sukhoi",
+  "Tupolev" = "Tupolev",
+  "Yakovlev" = "Yakovlev"
+)
+assign_manufacturer <- function(name, keywords) {
+  name_lc <- tolower(name)  # Convert to lowercase for case-insensitive matching
+  
+  # Loop through all keywords
+  for (keyword in names(keywords)) {
+    # Check if any part of the name matches the keyword
+    if (any(grepl(tolower(keyword), name_lc, fixed = TRUE))) {
+      return(keywords[[keyword]])  # Return the manufacturer if found
+    }
+  }
+  return("other")  # Return "other" if no match is found
+}
+manufacturer_data <- sapply(planes_clean$plane_name, assign_manufacturer, keywords = manufacturer)
+manufacturer <- data.frame(Manufacturer = manufacturer_data)
+manufacturer <- manufacturer %>%
+  group_by(Manufacturer) %>%
+  summarise(Count = n()) %>%
+  arrange(Count)
+manufacturer$Manufacturer <- factor(manufacturer$Manufacturer, levels = manufacturer$Manufacturer)
+ggplot(manufacturer, aes(x = Count, y = Manufacturer)) + geom_col() + theme(axis.text.y = element_text(hjust = 1, size = 7))
+ggsave(
+  "../figures/planeCount.png"
+)
+```

@@ -234,6 +234,17 @@ knitr::include_graphics("figures/numOfFlights.png")
 
 ![](figures/numOfFlights.png)<!-- -->
 
-*Question 5:*
+*Question 5:* **What Brand of Plane is Most Popular**
+
+- **Plane Type is concentrated**
+  - Majority are Boeing, Airbus, Douglas, or Embraer
+  - Some only have one of that plane
+- **Only 246 planes so pretty small sample size**
+
+``` r
+knitr::include_graphics("figures/planeCount.png")
+```
+
+![](figures/planeCount.png)<!-- -->
 
 ## Conclusion
