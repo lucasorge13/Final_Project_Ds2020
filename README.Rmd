@@ -134,19 +134,23 @@ knitr::include_graphics("figures/countries.png")
 
 *Question 4:* **What airports have the most unique flights to and from them**
 
-- **Majority are in the US**
-  - The highest by far is ATL, but 4 of the top 10 are also in the US (ORD, LAX, DFW, and JFK)
+-   **Majority are in the US**
 
-- **China has a few big ones**
-  - The 3rd largest, PEK, as well as PVG are in China
-  - Other Asian countries with large airports are Singapore and South Korea
-  
-- **Remaining Large Airports are all in Europe**
-  - UK, France, and Germany are the main countries with large airports
-  - Surrounding Western European countries like Spain and the Netherlands also have some large airports.
-```{r}
-knitr::include_graphics("figures/numOfFlights.png")
-```
+    -   The highest by far is ATL, but 4 of the top 10 are also in the US (ORD, LAX, DFW, and JFK)
+
+-   **China has a few big ones**
+
+    -   The 3rd largest, PEK, as well as PVG are in China
+    -   Other Asian countries with large airports are Singapore and South Korea
+
+-   **Remaining Large Airports are all in Europe**
+
+    -   UK, France, and Germany are the main countries with large airports
+    -   Surrounding Western European countries like Spain and the Netherlands also have some large airports.
+
+    ```{r}
+    knitr::include_graphics("figures/numOfFlights.png")
+    ```
 
 *Question 5:* **What Brand of Plane is Most Popular**
 

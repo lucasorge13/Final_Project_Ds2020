@@ -1,14 +1,13 @@
-- [Final_Project_Ds2020](#final_project_ds2020)
-- [Global Air Travel Analysis using
-  OpenFlights](#global-air-travel-analysis-using-openflights)
-  - [Introduction](#introduction)
-  - [Data Sources](#data-sources)
-  - [Project Objectives](#project-objectives)
-  - [Completed Steps](#completed-steps)
-  - [Methodology](#methodology)
-  - [Data Cleaning](#data-cleaning)
-  - [Results](#results)
-  - [Conclusion](#conclusion)
+---
+title: "Final_Project_Ds2020"
+author: "Lucas Martins Sorge, Nina De Grandis, Brandon Merrick"
+date: "2025-05-04"
+output: 
+  md_document:
+    variant: gfm
+    toc: true
+    preserve_yaml: true
+---
 
 - [Final_Project_Ds2020](#final_project_ds2020)
 - [Global Air Travel Analysis using
@@ -217,22 +216,27 @@ knitr::include_graphics("figures/countries.png")
 them**
 
 - **Majority are in the US**
+
   - The highest by far is ATL, but 4 of the top 10 are also in the US
     (ORD, LAX, DFW, and JFK)
+
 - **China has a few big ones**
+
   - The 3rd largest, PEK, as well as PVG are in China
   - Other Asian countries with large airports are Singapore and South
     Korea
+
 - **Remaining Large Airports are all in Europe**
+
   - UK, France, and Germany are the main countries with large airports
   - Surrounding Western European countries like Spain and the
     Netherlands also have some large airports.
 
-``` r
-knitr::include_graphics("figures/numOfFlights.png")
-```
+  ``` r
+  knitr::include_graphics("figures/numOfFlights.png")
+  ```
 
-![](figures/numOfFlights.png)<!-- -->
+  ![](figures/numOfFlights.png)<!-- -->
 
 *Question 5:* **What Brand of Plane is Most Popular**
 
@@ -248,3 +252,5 @@ knitr::include_graphics("figures/planeCount.png")
 ![](figures/planeCount.png)<!-- -->
 
 ## Conclusion
+
+In conclusion, this analysis has helped us understand global air travel and the trends and patterns we were looking for. The biggest thing we concluded that had an effect on global air travel is population. This affects where airports are located, how many per country, how large the airport is, and more. More developed countries also have a better air travel system. The largest and most frequented airports can be found in countries like the US and China, highly developed and highly populated. We also found that many places have two types of structure; small hubs that are used more often, and a wider range of routes that handle the rest of longer flights to all over the world. Further research that could be done is comparing the data direcly to population maps. We could also examine the infrastructure and ecomic standings of the countries in the data set and see if they have an effect on air travel in that given country. 
