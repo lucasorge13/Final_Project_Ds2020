@@ -3,10 +3,8 @@ title: "Final_Project_Ds2020"
 author: "Lucas Martins Sorge, Nina De Grandis, Brandon Merrick"
 date: "2025-05-04"
 output: 
-  md_document:
-    variant: gfm
+  github_document:
     toc: true
-    preserve_yaml: true
 ---
 
 # Final_Project_Ds2020
